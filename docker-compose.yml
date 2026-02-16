@@ -62,7 +62,32 @@ services:
   #   - Use a named volume "product-data"
   #   - Be on app-network
 
-  # YOUR CODE HERE
+  product-service:
+    build: ./product-service
+    ports:
+      - "3002:3002"
+    environment:
+      DB_HOST: product-db
+      DB_PORT: 5432
+      DB_NAME: productdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      - product-db
+    networks:
+      - app-network
+
+  product-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: productdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - product-data:/var/lib/postgresql/data
+      - ./product-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
 
   # ============================================
   # TODO: Add Order Service + Database
@@ -85,7 +110,34 @@ services:
   #   - Use a named volume "order-data"
   #   - Be on app-network
 
-  # YOUR CODE HERE
+  order-service:
+    build: ./order-service
+    ports:
+      - "3003:3003"
+    environment:
+      DB_HOST: order-db
+      DB_PORT: 5432
+      DB_NAME: orderdb
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      - order-db
+      - user-service
+      - product-service
+    networks:
+      - app-network
+
+  order-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - order-data:/var/lib/postgresql/data
+      - ./order-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
 
 networks:
   app-network:
@@ -93,4 +145,6 @@ networks:
 
 volumes:
   user-data:
+  product-data:
+  order-data:
   # TODO: Add volumes for product-data and order-data
