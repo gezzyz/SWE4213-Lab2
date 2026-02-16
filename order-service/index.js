@@ -55,11 +55,17 @@ const waitForDB = async (retries = 10, delay = 2000) => {
 const validateUser = async (userId) => {
   try {
     const response = await fetch(`http://user-service:3001/users/${userId}`);
-    if (!response.ok) return null;
-    return await response.json();
+    if (response.status === 404) {
+      return { ok: false, status: 404, error: 'User not found' };
+    }
+    if (!response.ok) {
+      return { ok: false, status: 503, error: 'User Service is unavailable' };
+    }
+    const data = await response.json();
+    return { ok: true, data };
   } catch (err) {
     console.error('Error validating user:', err);
-    return null;
+    return { ok: false, status: 503, error: 'User Service is unavailable' };
   }
 };
 
@@ -69,11 +75,17 @@ const validateUser = async (userId) => {
 const validateProduct = async (productId) => {
   try{
     const response = await fetch(`http://product-service:3002/products/${productId}`);
-    if (!response.ok) return null;
-    return await response.json(); 
+    if (response.status === 404) {
+      return { ok: false, status: 404, error: 'Product not found' };
+    }
+    if (!response.ok) {
+      return { ok: false, status: 503, error: 'Product Service is unavailable' };
+    }
+    const data = await response.json();
+    return { ok: true, data };
   } catch (err) {
     console.error('Error validating product:', err);
-    return null;
+    return { ok: false, status: 503, error: 'Product Service is unavailable' };
   }
 };
 
@@ -104,15 +116,15 @@ app.post('/orders', async (req, res) => {
     return res.status(400).json({ error: 'user_id, product_id, and quantity are required' });
   }
   try {
-    const user = await validateUser(user_id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    const userResult = await validateUser(user_id);
+    if (!userResult.ok) {
+      return res.status(userResult.status).json({ error: userResult.error });
     }
-    const product = await validateProduct(product_id);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+    const productResult = await validateProduct(product_id);
+    if (!productResult.ok) {
+      return res.status(productResult.status).json({ error: productResult.error });
     }
-    const total_price = product.price * quantity;
+    const total_price = productResult.data.price * quantity;
     const result = await pool.query(
       'INSERT INTO orders (user_id, product_id, quantity, total_price) VALUES ($1, $2, $3, $4) RETURNING *',
       [user_id, product_id, quantity, total_price]
