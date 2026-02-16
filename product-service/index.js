@@ -117,6 +117,18 @@ app.get('/products/:id', async (req, res) => {
   }
 });
 
+app.get('/health', async (req, res) => {
+  res.status(200).json({ status: 'Product Service is running' });
+  try {
+      await pool.query('SELECT 1');
+      console.log('Connected to database');
+      return;
+    } catch (err) {
+      res.status(500).json({ status: 'Product Service is running but cannot connect to database' });
+      console.log(`Cannot connect to database:`, err);
+    }
+});
+
 // Start server after DB is ready
 waitForDB().then(() => {
   initDB().then(() => {

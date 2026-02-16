@@ -15,6 +15,35 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || 'postgres',
 });
 
+const initDB = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE
+      );
+    `);
+    console.log('Database initialized');
+  } catch (err) {
+    console.error('Error initializing database:', err);
+    process.exit(1);
+  }
+
+  try{  
+    const checkEmpty = await pool.query('SELECT 1 FROM users LIMIT 1');
+    if (checkEmpty.rows.length === 0) {
+      await pool.query(`
+        INSERT INTO users (name, email) VALUES
+        ('Alice Johnson', 'alice@example.com'),
+        ('Bob Smith', 'bob@example.com');
+      `);
+    }
+  } catch (err) {
+    console.error('Error seeding database:', err);
+  }
+};
+
 // Wait for database to be ready
 const waitForDB = async (retries = 10, delay = 2000) => {
   for (let i = 0; i < retries; i++) {
@@ -77,9 +106,21 @@ app.get('/users/:id', async (req, res) => {
   }
 });
 
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    return res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    console.error('Health check failed (DB):', err);
+    return res.status(500).json({ status: 'error', error: 'database_unreachable' });
+  }
+});
+
 // Start server after DB is ready
 waitForDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`User Service running on port ${PORT}`);
+  initDB().then(() => {
+    app.listen(PORT, () => {
+      console.log(`User Service running on port ${PORT}`);
+    });
   });
 });

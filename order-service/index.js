@@ -140,6 +140,16 @@ app.get('/orders/:id', async (req, res) => {
   }
 });
 
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    return res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    console.error('Health check failed (DB):', err);
+    return res.status(500).json({ status: 'error', error: 'database_unreachable' });
+  }
+});
+
 // Start server after DB is ready
 waitForDB().then(() => {
   initDB().then(() => {
