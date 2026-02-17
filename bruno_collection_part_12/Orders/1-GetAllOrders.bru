@@ -1,0 +1,40 @@
+meta {
+  name: Get All Orders - Success
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/orders
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+  
+  test("Order objects have required fields", function() {
+    const orders = res.getBody();
+    orders.forEach(order => {
+      expect(order).to.have.property('id');
+      expect(order).to.have.property('user_id');
+      expect(order).to.have.property('product_id');
+      expect(order).to.have.property('quantity');
+      expect(order).to.have.property('total_price');
+    });
+  });
+}

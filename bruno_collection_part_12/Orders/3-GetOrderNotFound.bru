@@ -1,0 +1,27 @@
+meta {
+  name: Get Order by ID - Not Found
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/orders/{{invalidUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status code is 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("Response contains error message", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('error');
+    expect(body.error).to.equal('Order not found');
+  });
+}

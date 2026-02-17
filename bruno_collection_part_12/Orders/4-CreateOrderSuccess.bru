@@ -1,0 +1,54 @@
+meta {
+  name: Create Order - Success
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/orders
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "user_id": 1,
+    "product_id": 1,
+    "quantity": 2
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains created order", function() {
+    const body = res.getBody();
+    expect(body).to.be.an('object');
+  });
+  
+  test("Response has id field", function() {
+    const order = res.getBody();
+    expect(order).to.have.property('id');
+    expect(order.id).to.be.a('number');
+    bru.setVar('newOrderId', order.id);
+  });
+  
+  test("Response contains submitted data", function() {
+    const order = res.getBody();
+    expect(order.user_id).to.equal(1);
+    expect(order.product_id).to.equal(1);
+    expect(order.quantity).to.equal(2);
+  });
+  
+  test("Total price is calculated correctly", function() {
+    const order = res.getBody();
+    expect(order).to.have.property('total_price');
+    expect(parseFloat(order.total_price)).to.be.greaterThan(0);
+  });
+}

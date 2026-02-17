@@ -1,0 +1,45 @@
+meta {
+  name: Create User - Success
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "name": "John Doe",
+    "email": "john.doe@example.com"
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains created user", function() {
+    const body = res.getBody();
+    expect(body).to.be.an('object');
+  });
+  
+  test("Response has id field", function() {
+    const user = res.getBody();
+    expect(user).to.have.property('id');
+    expect(user.id).to.be.a('number');
+    bru.setVar('newUserId', user.id);
+  });
+  
+  test("Response contains submitted data", function() {
+    const user = res.getBody();
+    expect(user.name).to.equal('John Doe');
+    expect(user.email).to.equal('john.doe@example.com');
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Create User - Missing Email
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "name": "John Doe"
+  }
+}
+
+tests {
+  test("Status code is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+  
+  test("Response contains error message", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('error');
+    expect(body.error.toLowerCase()).to.include('required');
+  });
+}

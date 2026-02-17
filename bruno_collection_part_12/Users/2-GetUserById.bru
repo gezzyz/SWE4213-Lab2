@@ -1,0 +1,37 @@
+meta {
+  name: Get User by ID - Success
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{validUserId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains user object", function() {
+    const body = res.getBody();
+    expect(body).to.be.an('object');
+  });
+  
+  test("Response contains expected fields", function() {
+    const user = res.getBody();
+    expect(user.id).to.exist;
+    expect(user.name).to.exist;
+    expect(user.email).to.exist;
+  });
+  
+  test("User ID matches request", function() {
+    const user = res.getBody();
+    expect(user.id).to.equal(parseInt('{{validUserId}}'));
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Invalid Authorization Token
+  type: http
+  seq: 28
+}
+
+get {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: invalidtoken123
+}
+
+tests {
+  test("Status code is 401 Unauthorized", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+  
+  test("Response contains error message", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('error');
+    expect(body.error).to.equal('Unauthorized');
+  });
+}

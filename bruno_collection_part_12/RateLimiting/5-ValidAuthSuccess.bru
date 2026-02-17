@@ -1,0 +1,26 @@
+meta {
+  name: Rate Limit - Valid Authorization Returns 200
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Request with valid token returns success", function() {
+    expect(res.getStatus()).to.not.equal(401);
+    expect(res.getStatus()).to.not.equal(429);
+  });
+  
+  test("Response is successful JSON", function() {
+    const body = res.getBody();
+    expect(body).to.be.an('array');
+  });
+}

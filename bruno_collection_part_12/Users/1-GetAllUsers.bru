@@ -1,0 +1,38 @@
+meta {
+  name: Get All Users - Success
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+  
+  test("Response contains users", function() {
+    const body = res.getBody();
+    expect(body.length).to.be.greaterThan(0);
+  });
+  
+  test("User objects have required fields", function() {
+    const users = res.getBody();
+    users.forEach(user => {
+      expect(user).to.have.property('id');
+      expect(user).to.have.property('name');
+      expect(user).to.have.property('email');
+    });
+  });
+}

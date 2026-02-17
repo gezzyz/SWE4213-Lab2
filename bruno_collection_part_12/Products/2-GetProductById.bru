@@ -1,0 +1,44 @@
+meta {
+  name: Get Product by ID - Success
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/products/{{validProductId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an object", function() {
+    const body = res.getBody();
+    expect(body).to.be.an('object');
+  });
+  
+  test("Response contains expected fields", function() {
+    const product = res.getBody();
+    expect(product).to.have.property('id');
+    expect(product).to.have.property('name');
+    expect(product).to.have.property('description');
+    expect(product).to.have.property('price');
+  });
+  
+  test("Product ID matches request", function() {
+    const product = res.getBody();
+    expect(product.id).to.equal(parseInt('{{validProductId}}'));
+  });
+  
+  test("Price is a positive number", function() {
+    const product = res.getBody();
+    expect(product.price).to.be.a('number');
+    expect(product.price).to.be.greaterThan(0);
+  });
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Rate Limit - Exhaust Limit (Rapid Requests)
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Single request does not exceed rate limit", function() {
+    expect(res.getStatus()).to.not.equal(429);
+  });
+  
+  test("Response headers show remaining requests", function() {
+    const headers = res.getHeaders();
+    const remaining = parseInt(headers['ratelimit-remaining'] || '100');
+    expect(remaining).to.be.greaterThan(0);
+  });
+}

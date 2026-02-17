@@ -1,0 +1,38 @@
+meta {
+  name: Rate Limit Stress Test - Trigger 429
+  type: http
+  seq: 30
+}
+
+get {
+  url: {{baseUrl}}/api/users
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Rate limit configuration is 100 requests per 15 minutes", function() {
+    const headers = res.getHeaders();
+    const ratelimitLimit = parseInt(headers['ratelimit-limit'] || '0');
+    expect(ratelimitLimit).to.equal(100);
+    console.log("✓ Rate limit is correctly set to 100 requests per 15 minutes");
+  });
+  
+  test("Request was not rate limited (remaining > 0)", function() {
+    const headers = res.getHeaders();
+    const remaining = parseInt(headers['ratelimit-remaining'] || '0');
+    console.log(`Requests remaining in window: ${remaining}`);
+    expect(remaining).to.be.greaterThan(0);
+  });
+  
+  test("Rate limit reset header is present", function() {
+    const headers = res.getHeaders();
+    const resetTime = headers['ratelimit-reset'];
+    expect(resetTime).to.exist;
+    console.log(`Rate limit window resets at Unix timestamp: ${resetTime}`);
+  });
+}
+

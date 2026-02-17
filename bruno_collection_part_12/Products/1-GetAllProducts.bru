@@ -1,0 +1,46 @@
+meta {
+  name: Get All Products - Success
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/products
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an array", function() {
+    expect(res.getBody()).to.be.an('array');
+  });
+  
+  test("Response contains products", function() {
+    const body = res.getBody();
+    expect(body.length).to.be.greaterThan(0);
+  });
+  
+  test("Product objects have required fields", function() {
+    const products = res.getBody();
+    products.forEach(product => {
+      expect(product).to.have.property('id');
+      expect(product).to.have.property('name');
+      expect(product).to.have.property('description');
+      expect(product).to.have.property('price');
+    });
+  });
+  
+  test("Save first product ID for later tests", function() {
+    const products = res.getBody();
+    if (products.length > 0) {
+      bru.setVar('validProductId', products[0].id);
+    }
+  });
+}

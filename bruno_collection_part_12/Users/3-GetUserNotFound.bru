@@ -1,0 +1,26 @@
+meta {
+  name: Get User by ID - Not Found
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/users/{{invalidUserId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Status code is 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("Response contains error message", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('error');
+    expect(body.error).to.equal('User not found');
+  });
+}
