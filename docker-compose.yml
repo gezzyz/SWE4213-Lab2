@@ -27,6 +27,11 @@ services:
       DB_NAME: userdb
       DB_USER: postgres
       DB_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       - user-db
     networks:
@@ -72,6 +77,11 @@ services:
       DB_NAME: productdb
       DB_USER: postgres
       DB_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       - product-db
     networks:
@@ -120,10 +130,18 @@ services:
       DB_NAME: orderdb
       DB_USER: postgres
       DB_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
-      - order-db
-      - user-service
-      - product-service
+      order-db:
+        condition: service_started
+      user-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
     networks:
       - app-network
 
